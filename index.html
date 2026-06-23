@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Skyline — Weather Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="search">
+        <form id="search-form" class="search__form">
+          <input
+            id="search-input"
+            class="search__input"
+            type="text"
+            placeholder="Search for a city..."
+            autocomplete="off"
+          />
+          <button type="submit" class="search__btn">Search</button>
+        </form>
+        <button id="geo-btn" class="geo-btn" type="button">My location</button>
+      </header>
+
+      <main id="dashboard" class="dashboard">
+        <p class="dashboard__empty">Search for a city to see the weather.</p>
+      </main>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
