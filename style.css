@@ -57,3 +57,35 @@ body {
     text-align: center;
     opacity: 0.7;
 }
+
+.forecast {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.forecast__card {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 0.75rem 0.5rem;
+    flex: 1;
+    min-width: 70px;
+}
+
+.forecast__day {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.forecast__condition {
+    font-size: 0.75rem;
+    opacity: 0.85;
+    margin-bottom: 0.5rem;
+    min-height: 2.5em; /* keeps cards aligned when text wraps to 2 lines */
+}
+
+.forecast__temps {
+    font-size: 0.9rem;
+}

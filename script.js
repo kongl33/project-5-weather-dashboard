@@ -58,6 +58,7 @@ async function getWeather(city) {
 
     // Hand the data off to be drawn on the screen
     renderCurrent(place.name, place.country, weatherData.current);
+    renderForecast(weatherData.daily);
   } catch (error) {
     // This runs only if a fetch truly fails (no internet, server down, etc...)
     dashboard.innerHTML = `<p class="message">Something went wrong. Check your connection and try again.</p>`;
@@ -84,4 +85,42 @@ function renderCurrent(name, country, current) {
       </div>
     </section>
   `;
+}
+
+// Build the 5-day forcast row and put it on the page
+function renderForecast(daily) {
+  // Create the container that will hold all the day cards
+  const section = document.createElement("section");
+  section.className = "forecast";
+
+  // Loop over the first 5 days.
+  // The API gives PARALLEL arrays: daily.time[i], daily.weather_code[i],
+  // daily.temperature_2m_max[i] all describe the SAME day, day number i.
+  for (let i = 0; i < 6; i++) {
+    // Turn "2026-06-23" into a short weekday like "Mon".
+    // Splitting the date into parts avoids a timezone off-by-one bug.
+    const [year, month, day] = daily.time[i].split("-");
+    const date = new Date(year, month - 1, day);
+    const dayName = date.toLocaleDateString("en-US", {weekday: "short"});
+
+    // Pull this day's values out of the arrays
+    const condition = weatherCodes[daily.weather_code[i]] || "Unknown";
+    const high = Math.round(daily.temperature_2m_max[i]);
+    const low = Math.round(daily.temperature_2m_min[i]);
+
+    // Build one card and fill in its insides
+    const card = document.createElement("div");
+    card.className = "forecast__card";
+    card.innerHTML = `
+      <p class="forecast__day">${dayName}</p>
+      <p class="forecast__condition">${condition}</p>
+      <p class="forecast__temps">${high}° / ${low}°</p>
+    `;
+
+    // Add this card into the container
+    section.appendChild(card);
+  }
+
+  // Add the whole finished row onto the page, below the current weather
+  dashboard.appendChild(section);
 }
