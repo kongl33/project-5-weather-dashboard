@@ -1,6 +1,7 @@
 const form = document.getElementById("search-form");
 const input = document.getElementById("search-input");
 const dashboard = document.getElementById("dashboard");
+const geoBtn = document.getElementById("geo-btn");
 
 // Translate the API's number codes into readable text
 const weatherCodes = {
@@ -50,15 +51,10 @@ async function getWeather(city) {
     }
 
     const place = geoData.results[0]; // grab the best (first) match
+    const label = `${place.name}, ${place.country}`;
 
-    // Step 2: use those CORDINATES to ask for the actual weather
-    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`;
-    const weatherRes = await fetch(weatherUrl); // ask the forcast API
-    const weatherData = await weatherRes.json(); // turn it into a JS object
-
-    // Hand the data off to be drawn on the screen
-    renderCurrent(place.name, place.country, weatherData.current);
-    renderForecast(weatherData.daily);
+    // Step 2: hand the cordinates off to the shared display function
+    await displayWeather(place.latitude, place.longitude, label);
   } catch (error) {
     // This runs only if a fetch truly fails (no internet, server down, etc...)
     dashboard.innerHTML = `<p class="message">Something went wrong. Check your connection and try again.</p>`;
@@ -66,8 +62,19 @@ async function getWeather(city) {
   }
 }
 
+// Shared: given cordinates, fetch the forecast and draw everything
+// Both the search AND the "my location" button use this.
+async function displayWeather(latitude, longitude, label) {
+  const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`;
+  const weatherRes = await fetch(weatherUrl); // ask the forcast API
+  const weatherData = await weatherRes.json(); // turn it into a JS object
+
+  renderCurrent(label, weatherData.current);
+  renderForecast(weatherData.daily);
+}
+
 // Build the HTML for the current weather and put it on the page
-function renderCurrent(name, country, current) {
+function renderCurrent(label, current) {
   // Look up the readable condition; fall back to "Unknown" if missing
   const condition = weatherCodes[current.weather_code] || "Unknown";
 
@@ -75,7 +82,7 @@ function renderCurrent(name, country, current) {
   // Math.round() trims long decimals (15.34 -> 15) so it reads cleanly.
   dashboard.innerHTML = `
     <section class="current">
-      <h1 class="current__city">${name}, ${country}</h1>
+      <h1 class="current__city">${label}</h1>
       <p class="current__temp">${Math.round(current.temperature_2m)}°C</p>
       <p class="current__condition">${condition}</p>
       <div class="current__details">
@@ -101,7 +108,7 @@ function renderForecast(daily) {
     // Splitting the date into parts avoids a timezone off-by-one bug.
     const [year, month, day] = daily.time[i].split("-");
     const date = new Date(year, month - 1, day);
-    const dayName = date.toLocaleDateString("en-US", {weekday: "short"});
+    const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
 
     // Pull this day's values out of the arrays
     const condition = weatherCodes[daily.weather_code[i]] || "Unknown";
@@ -123,4 +130,44 @@ function renderForecast(daily) {
 
   // Add the whole finished row onto the page, below the current weather
   dashboard.appendChild(section);
+}
+
+// "My location" button: ask the browser where the user is
+geoBtn.addEventListener("click", () => {
+  if (!navigator.geolocation) {
+    renderMessage("Geolocation isn't supported by your browser.");
+    return;
+  }
+
+  renderLoading();
+  // This pops the browser's "Allow location?" prompt.
+  // It takes TWO functions: one for success, one for failure.
+  navigator.geolocation.getCurrentPosition(onGeoSuccess, onGeoError);
+});
+
+// Runs if the user allows location and it's found
+async function onGeoSuccess(position) {
+  // The browser hands us a position object; pull lat/lon out of it
+  const {latitude, longitude} = position.coords;
+  try {
+    await displayWeather(latitude, longitude, "Your location");
+  } catch (error) {
+    renderMessage("Something went wrong fetching your weather.");
+    console.error(error);
+  }
+}
+
+// Run if the user blocks location or it can't be found
+function onGeoError(error) {
+  renderMessage("Couldn't get your location. Allow location access or search by city.");
+  console.error(error);
+}
+
+// Small helpers so every state looks consistent
+function renderLoading() {
+  dashboard.innerHTML = `<p class="message">Loading...</p>`;
+}
+
+function renderMessage(text) {
+  dashboard.innerHTML = `<p class="message">${text}</p>`;
 }
