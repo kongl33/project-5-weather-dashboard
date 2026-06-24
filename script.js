@@ -87,13 +87,13 @@ function renderCurrent(name, country, current) {
   `;
 }
 
-// Build the 5-day forcast row and put it on the page
+// Build the 6-day forecast row and put it on the page
 function renderForecast(daily) {
   // Create the container that will hold all the day cards
   const section = document.createElement("section");
   section.className = "forecast";
 
-  // Loop over the first 5 days.
+  // Loop over the first 6 days.
   // The API gives PARALLEL arrays: daily.time[i], daily.weather_code[i],
   // daily.temperature_2m_max[i] all describe the SAME day, day number i.
   for (let i = 0; i < 6; i++) {
