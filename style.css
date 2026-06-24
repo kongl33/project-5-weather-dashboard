@@ -4,21 +4,40 @@
     padding: 0;
 }
 
+/* Theme variables
+    --bg is the page background. Each theme class below overrides it.
+    The rest of the CSS just reads var(--bg), so to restyle a weather
+    type you change ONE line here instead of hunting through the file.
+*/
 body {
+    --bg: linear-gradient(160deg, #2c5364, #203a43, #0f2027);
+    --card-bg: rgba(255, 255, 255, 0.12);
+
     font-family: system-ui, sans-serif;
     min-height: 100vh;
-    background: #1e3a5f;
+    background: var(--bg);
+    background-attachment: fixed;
     color: #fff;
     display: flex;
     justify-content: center;
     padding: 2rem 1rem;
+    transition: background 0.6s ease; /* smooth fade when the theme changes */
+    
 }
 
-.app{
+body.theme-clear  { --bg: linear-gradient(160deg, #2980b9, #6dd5fa); }
+body.theme-clouds { --bg: linear-gradient(160deg, #4b6cb7, #243b55); }
+body.theme-rain   { --bg: linear-gradient(160deg, #3a4a5c, #1c2733); }
+body.theme-snow   { --bg: linear-gradient(160deg, #8e9eab, #4b5d6e); }
+body.theme-storm  { --bg: linear-gradient(160deg, #232526, #414345); }
+body.theme-night  { --bg: linear-gradient(160deg, #0f2027, #203a43, #2c5364); }
+
+.app {
     width: 100%;
-    max-width: 480px;
+    max-width: 540px;
 }
 
+/* Search */
 .search__form {
     display: flex;
     gap: 0.5rem;
@@ -26,66 +45,120 @@ body {
 
 .search__input {
     flex: 1;
-    padding: 0.75rem 1rem;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
+  padding: 0.85rem 1rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.95);
 }
 
-.search__btn,
+.search__input:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+}
+
+.search__btn:active,
+.geo-btn:active {
+  transform: scale(0.97);
+}
+
 .geo-btn {
-    padding: 0.75rem 1rem;
-    border: none;
-    border-radius: 8px;
-    background: #fff;
-    color: #1e3a5f;
-    font-weight: 600;
-    cursor: pointer;
+  margin-top: 0.75rem;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
 }
 
-.geo-btn {
-    margin-top: 0.75rem;
-    background: rgba(255, 255, 255, 0.15);
-    color: #fff;
-}
-
+/* ===== Current weather ===== */
 .dashboard {
-    margin-top: 2rem;
+  margin-top: 2.5rem;
+  text-align: center;
 }
 
-.dashboard__empty {
-    text-align: center;
-    opacity: 0.7;
+.current__city {
+  font-size: 1.6rem;
+  font-weight: 600;
 }
 
+.current__temp {
+  font-size: 5rem;
+  font-weight: 700;
+  line-height: 1.05;
+  margin: 0.25rem 0;
+}
+
+.current__condition {
+  font-size: 1.25rem;
+  opacity: 0.9;
+  margin-bottom: 1.25rem;
+}
+
+.current__details {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+/* ===== Forecast row ===== */
 .forecast {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 2rem;
-    justify-content: center;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 2.5rem;
 }
 
 .forecast__card {
-    background: rgba(255, 255, 255, 0.12);
-    border-radius: 10px;
-    padding: 0.75rem 0.5rem;
-    flex: 1;
-    min-width: 70px;
+  flex: 1; /* each card takes an equal share of the row */
+  background: var(--card-bg);
+  border-radius: 14px;
+  padding: 1rem 0.5rem;
+  text-align: center;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.forecast__card:hover {
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .forecast__day {
-    font-weight: 600;
-    margin-bottom: 0.25rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
 }
 
 .forecast__condition {
-    font-size: 0.75rem;
-    opacity: 0.85;
-    margin-bottom: 0.5rem;
-    min-height: 2.5em; /* keeps cards aligned when text wraps to 2 lines */
+  font-size: 0.75rem;
+  opacity: 0.85;
+  margin-bottom: 0.5rem;
+  min-height: 2.5em; /* keeps cards aligned when text wraps to 2 lines */
 }
 
 .forecast__temps {
-    font-size: 0.9rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.message {
+  margin-top: 2.5rem;
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 480px) {
+  .current__temp {
+    font-size: 4rem;
+  }
+
+  .forecast {
+    overflow-x: auto; /* let the row scroll sideways instead of squishing */
+    padding-bottom: 0.5rem;
+  }
+
+  .forecast__card {
+    min-width: 90px;
+    flex: 0 0 auto; /* don't shrink; keep readable width while scrolling */
+  }
 }

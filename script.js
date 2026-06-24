@@ -65,7 +65,7 @@ async function getWeather(city) {
 // Shared: given cordinates, fetch the forecast and draw everything
 // Both the search AND the "my location" button use this.
 async function displayWeather(latitude, longitude, label) {
-  const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`;
+  const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`;
   const weatherRes = await fetch(weatherUrl); // ask the forcast API
   const weatherData = await weatherRes.json(); // turn it into a JS object
 
@@ -77,6 +77,7 @@ async function displayWeather(latitude, longitude, label) {
 function renderCurrent(label, current) {
   // Look up the readable condition; fall back to "Unknown" if missing
   const condition = weatherCodes[current.weather_code] || "Unknown";
+  setTheme(current.weather_code, current.is_day);
 
   // Write the whole weather block in one go using a template literal.
   // Math.round() trims long decimals (15.34 -> 15) so it reads cleanly.
@@ -170,4 +171,25 @@ function renderLoading() {
 
 function renderMessage(text) {
   dashboard.innerHTML = `<p class="message">${text}</p>`;
+}
+
+// --- Swap the page's background theme based on the weather ---
+function setTheme(weatherCode, isDay) {
+  document.body.className = ""; // clear whatever theme was set last time
+
+  // Night wins over everything: if the sun's down, go dark and stop.
+  if (isDay === 0) {
+    document.body.classList.add("theme-night");
+    return;
+  }
+
+  // Otherwise, sort the weather code into a mood.
+  // Snow is checked before rain because their code ranges overlap.
+  let theme = "theme-clear";
+  if ([2, 3, 45, 48].includes(weatherCode)) theme = "theme-clouds";
+  else if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) theme = "theme-snow";
+  else if ((weatherCode >= 51 && weatherCode <= 67) || (weatherCode >= 80 && weatherCode <= 82)) theme = "theme-rain";
+  else if (weatherCode >= 95) theme = "theme-storm";
+
+  document.body.classList.add(theme);
 }
